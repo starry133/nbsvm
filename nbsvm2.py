@@ -96,8 +96,9 @@ class NBSVM(six.with_metaclass(ABCMeta, BaseEstimator, ClassifierMixin)):
             raise ValueError("Input X must be non-negative")
 
         self.ratios_ += safe_sparse_dot(Y.T, X)  # ratio + feature_occurrance_c
-        normalize(self.ratios_, norm='l1', axis=1, copy=False)
-        row_calc = lambda r: np.log(np.divide(r, (1 - r)))
+        ratios_sum = self.ratios_.sum(axis=0)
+        # normalize(self.ratios_, norm='l1', axis=1, copy=False)
+        row_calc = lambda r: np.log(np.divide(r/abs(r).sum(), (ratios_sum-r)/abs(ratios_sum-r).sum()))
         self.ratios_ = np.apply_along_axis(row_calc, axis=1, arr=self.ratios_)
         check_array(self.ratios_)
         self.ratios_ = sparse.csr_matrix(self.ratios_)
